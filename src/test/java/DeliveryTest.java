@@ -1,5 +1,4 @@
 import com.codeborne.selenide.Configuration;
-import io.github.bonigarcia.wdm.WebDriverManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -16,8 +15,8 @@ public class DeliveryTest {
 
     @BeforeEach
     void setUp() {
-        WebDriverManager.chromedriver().setup();
-        Configuration.headless = false; // для локальной отладки
+
+        Configuration.headless = true;
         Configuration.timeout = 15000;
         open("http://localhost:9999");
         user = DataGenerator.Registration.generateUser("ru");
