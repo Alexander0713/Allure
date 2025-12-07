@@ -3,56 +3,29 @@ name: Java CI with Gradle
 on: [push, pull_request]
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v4
       
-      - name: Set up JDK 11
-        uses: actions/setup-java@v2
+      - name: Setup Java
+        uses: actions/setup-java@v4
         with:
           java-version: '11'
-          distribution: 'adopt'
+          distribution: 'temurin'
           
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
-        
-      - name: Install Chrome and ChromeDriver
+      - name: Setup Chrome
         run: |
-          sudo apt-get update
-          sudo apt-get install -y wget unzip
-          # Устанавливаем Chrome
-          wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
-          echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" | sudo tee /etc/apt/sources.list.d/google-chrome.list
           sudo apt-get update
           sudo apt-get install -y google-chrome-stable
-          
-          # Проверяем версию Chrome
           google-chrome-stable --version
           
-      - name: Start SUT
+      - name: Start application
         run: |
           java -jar artifacts/app-replan-delivery.jar &
-          sleep 5
-          echo "Waiting for app to start..."
-          # Проверяем, что приложение запустилось
-          for i in {1..30}; do
-            if curl -s http://localhost:9999 > /dev/null; then
-              echo "App started successfully"
-              break
-            fi
-            sleep 1
-            echo "Waiting for app... attempt $i"
-          done
-          curl -f http://localhost:9999 || exit 1
+          sleep 10
           
-      - name: Build with Gradle
-        run: ./gradlew test --info -Dselenide.headless=true -Dselenide.browser=chrome
-        
-      - name: Upload test reports
-        if: always()
-        uses: actions/upload-artifact@v2
-        with:
-          name: test-reports
-          path: build/reports/tests/test/
+      - name: Run tests
+        run: ./gradlew test --info -Dselenide.headless=true
