@@ -1,9 +1,12 @@
 name: Java CI with Gradle
+
 on: [push, pull_request]
 
 jobs:
   build:
+
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v2
       - name: Set up JDK 11
@@ -14,20 +17,13 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
       - name: Start SUT
-        run: |
-          java -jar artifacts/app-replan-delivery.jar &
-          sleep 10  # Увеличиваем время ожидания
-      - name: Wait for app to be ready
-        run: |
-          for i in {1..10}; do
-            if curl -s -o /dev/null -w "%{http_code}" http://localhost:9999 | grep -q "200\|404"; then
-              echo "App is ready"
-              exit 0
-            fi
-            echo "Waiting for app to start... attempt $i"
-            sleep 3
-          done
-          echo "App failed to start"
-          exit 1
+        # Запускаем SUT,
+        # имя файла SUT будет отличаться в каждой задаче.
+        # & означает, что в фоновом режиме не блокируем терминал для запуска тестов, 
+        # обязательно должен быть для запуска SUT в CI
+        run: java -jar artifacts/app-replan-delivery.jar &
       - name: Build with Gradle
-        run: ./gradlew test --info -Dselenide.headless=true
+        # Запускаем автотесты
+        # Для проектов на базе Selenide необходимо добавить параметр для запуска браузера
+        # в headless режиме -Dselenide.headless=true, параметр --info должен остаться
+        run: ./gradlew test --info  
