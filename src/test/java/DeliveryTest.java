@@ -16,8 +16,6 @@ public class DeliveryTest {
     @BeforeEach
     void setUp() {
 
-        Configuration.headless = true;
-        Configuration.timeout = 15000;
         open("http://localhost:9999");
         user = DataGenerator.Registration.generateUser("ru");
     }
@@ -34,7 +32,9 @@ public class DeliveryTest {
         $(byText("Запланировать")).click();
 
         $("[data-test-id=success-notification]")
-                .shouldBe(visible, Duration.ofSeconds(15));
+                .shouldBe(visible, Duration.ofSeconds(15))
+                .shouldHave(text("Успешно!"))
+                .shouldHave(text("Встреча успешно запланирована"));
 
         // 2. Изменяем дату
         $("[data-test-id=date] input").doubleClick().press(BACK_SPACE);
@@ -42,9 +42,11 @@ public class DeliveryTest {
         $(byText("Запланировать")).click();
 
         $("[data-test-id=replan-notification]")
-                .shouldBe(visible, Duration.ofSeconds(15));
+                .shouldBe(visible, Duration.ofSeconds(15))
+                .shouldHave(text("Необходимо подтверждение"))
+                .shouldHave(text("У вас уже запланирована встреча на другую дату. Перепланировать?"));
 
-        $("[data-test-id=replan-notification] button").click();
+        $("[data-test-id=replan-notification] .button").click();
 
         $("[data-test-id=success-notification]")
                 .shouldBe(visible, Duration.ofSeconds(15));
