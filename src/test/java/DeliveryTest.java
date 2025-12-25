@@ -1,6 +1,7 @@
-import com.codeborne.selenide.Configuration;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import com.codeborne.selenide.logevents.SelenideLogger;
+import org.junit.jupiter.api.*;
+import org.openqa.selenium.OutputType;
+import org.openqa.selenium.TakesScreenshot;
 
 import java.time.Duration;
 
@@ -9,9 +10,25 @@ import static com.codeborne.selenide.Selenide.*;
 import static com.codeborne.selenide.Selectors.byText;
 import static org.openqa.selenium.Keys.BACK_SPACE;
 
+import io.qameta.allure.selenide.AllureSelenide;
+import io.qameta.allure.Attachment;
+import static com.codeborne.selenide.WebDriverRunner.getWebDriver;
 
 public class DeliveryTest {
     private DataGenerator.UserInfo user;
+
+    @BeforeAll
+    static void setUpAll() {
+        SelenideLogger.addListener("AllureSelenide", new AllureSelenide()
+                .screenshots(true)
+                .savePageSource(true)
+        );
+    }
+
+    @AfterAll
+    static void tearDownAll() {
+        SelenideLogger.removeListener("AllureSelenide");
+    }
 
     @BeforeEach
     void setUp() {
@@ -53,5 +70,10 @@ public class DeliveryTest {
                 .shouldBe(visible, Duration.ofSeconds(15))
                 .shouldHave(text("Успешно!"))
                 .shouldHave(text("Встреча успешно запланирована на " + secondDate));
+    }
+
+    @Attachment(value = "Скриншот", type = "image/png")
+    public byte[] takeScreenshot(String name) {
+        return ((TakesScreenshot) getWebDriver()).getScreenshotAs(OutputType.BYTES);
     }
 }
